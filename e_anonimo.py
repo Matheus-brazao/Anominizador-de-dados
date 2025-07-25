@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import re
 import json
+import random
+import string
 import spacy
 import docx
 import pdfplumber
@@ -9,10 +11,11 @@ import pdfplumber
 class AnonimizadorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Anonimizador e Revelador de Documentos com NER")
+        self.root.title("Anonimizador com Tokens Aleatórios e Seguros")
         self.mapa = {}
+        self.contadores = {"CPF":0, "CNPJ":0, "NOME":0, "TELEFONE":0}
 
-        self.nlp = spacy.load("pt_core_news_sm")  # Carregar modelo spaCy português
+        self.nlp = spacy.load("pt_core_news_sm")
 
         self.notebook = tk.ttk.Notebook(root)
         self.frame_anonimizar = tk.Frame(self.notebook)
@@ -23,6 +26,57 @@ class AnonimizadorApp:
 
         self.setup_anonimizar()
         self.setup_revelar()
+
+    def gerar_id_aleatorio(self, length=8):
+        return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+
+    def gerar_token(self, tipo):
+        self.contadores[tipo] += 1
+        id_aleatorio = self.gerar_id_aleatorio()
+        token = f"{tipo}_{self.contadores[tipo]}_{id_aleatorio}"
+        return token
+
+    def anonimizar_texto(self, texto):
+        self.mapa = {}
+        self.contadores = {"CPF":0, "CNPJ":0, "NOME":0, "TELEFONE":0}
+
+        def substituir_cpf(m):
+            valor = m.group()
+            token = self.gerar_token("CPF")
+            self.mapa[token] = valor
+            return token
+
+        cpf_pattern = r'\b\d{3}\.?\d{3}\.?\d{3}-\d{2}\b'
+        texto = re.sub(cpf_pattern, substituir_cpf, texto)
+
+        def substituir_cnpj(m):
+            valor = m.group()
+            token = self.gerar_token("CNPJ")
+            self.mapa[token] = valor
+            return token
+
+        cnpj_pattern = r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b'
+        texto = re.sub(cnpj_pattern, substituir_cnpj, texto)
+
+        def substituir_telefone(m):
+            valor = m.group()
+            token = self.gerar_token("TELEFONE")
+            self.mapa[token] = valor
+            return token
+
+        telefone_pattern = r'\(?\d{2}\)?\s*\d{4,5}-?\d{4}'
+        texto = re.sub(telefone_pattern, substituir_telefone, texto)
+
+        doc = self.nlp(texto)
+        nomes_encontrados = [(ent.start_char, ent.end_char, ent.text) for ent in doc.ents if ent.label_ == "PER"]
+        nomes_encontrados = sorted(nomes_encontrados, key=lambda x: x[0], reverse=True)
+
+        for start, end, nome in nomes_encontrados:
+            token = self.gerar_token("NOME")
+            self.mapa[token] = nome
+            texto = texto[:start] + token + texto[end:]
+
+        return texto
 
     def setup_anonimizar(self):
         tk.Label(self.frame_anonimizar, text="Carregar arquivo (.txt, .pdf, .docx) ou colar texto:").pack()
@@ -35,7 +89,7 @@ class AnonimizadorApp:
         btn_anonimizar = tk.Button(self.frame_anonimizar, text="Anonimizar Texto", command=self.anonimizar_texto_interface)
         btn_anonimizar.pack(pady=10)
 
-        tk.Label(self.frame_anonimizar, text="Texto anonimizado (placeholders no lugar de dados sensíveis):").pack()
+        tk.Label(self.frame_anonimizar, text="Texto anonimizado (tokens no lugar de dados sensíveis):").pack()
         self.txt_saida_anonim = scrolledtext.ScrolledText(self.frame_anonimizar, height=10)
         self.txt_saida_anonim.pack(fill=tk.BOTH, expand=True)
 
@@ -47,7 +101,7 @@ class AnonimizadorApp:
         btn_salvar_texto.pack(side=tk.LEFT, padx=10)
 
     def setup_revelar(self):
-        tk.Label(self.frame_revelar, text="Carregar texto anonimizado (com placeholders):").pack()
+        tk.Label(self.frame_revelar, text="Carregar texto anonimizado (com tokens):").pack()
         btn_load = tk.Button(self.frame_revelar, text="Carregar arquivo TXT", command=self.carregar_arquivo_revelar)
         btn_load.pack(pady=5)
 
@@ -103,27 +157,6 @@ class AnonimizadorApp:
         import docx
         doc = docx.Document(caminho_docx)
         texto = "\n".join([p.text for p in doc.paragraphs])
-        return texto
-
-    def anonimizar_texto(self, texto):
-        self.mapa = {}
-        contador = 1
-
-        def substituir(match, tipo):
-            nonlocal contador
-            valor = match.group()
-            chave = f"[{tipo}_{contador}]"
-            self.mapa[chave] = valor
-            contador += 1
-            return chave
-
-        texto = re.sub(r'\b\d{3}\.\d{3}\.\d{3}-\d{2}\b', lambda m: substituir(m, "CPF"), texto)
-        texto = re.sub(r'\b\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}\b', lambda m: substituir(m, "CNPJ"), texto)
-
-        nomes = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos']
-        for nome in nomes:
-            texto = re.sub(rf'\b{nome}\b', lambda m: substituir(m, "NOME"), texto, flags=re.IGNORECASE)
-
         return texto
 
     def anonimizar_texto_interface(self):
