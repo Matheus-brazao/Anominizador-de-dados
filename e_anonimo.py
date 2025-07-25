@@ -11,9 +11,14 @@ import pdfplumber
 class AnonimizadorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Anonimizador com Tokens Aleatórios e Seguros")
+        self.root.title("Anonimizador Completo com Tokens Aleatórios")
         self.mapa = {}
-        self.contadores = {"CPF":0, "CNPJ":0, "NOME":0, "TELEFONE":0}
+        self.contadores = {
+            "CPF":0, "CNPJ":0, "NOME":0, "TELEFONE":0, "ENDERECO":0, "APELIDO":0, "AUTO":0
+        }
+        self.siglas_whitelist = {
+            "ANTT", "GEAUT", "SEI", "GDF", "BR", "CPF", "CNPJ", "ME", "LTDA", "EIRELI", "FELVP"
+        }
 
         self.nlp = spacy.load("pt_core_news_sm")
 
@@ -38,43 +43,99 @@ class AnonimizadorApp:
 
     def anonimizar_texto(self, texto):
         self.mapa = {}
-        self.contadores = {"CPF":0, "CNPJ":0, "NOME":0, "TELEFONE":0}
+        self.contadores = {k:0 for k in self.contadores}
 
+        # Preservar autos do tipo FELVP1234567
+        autos_encontrados = re.findall(r'\bFELVP\d+\b', texto, flags=re.IGNORECASE)
+        for auto in autos_encontrados:
+            chave = f"AUTO_{self.contadores['AUTO']+1}_{self.gerar_id_aleatorio()}"
+            self.contadores["AUTO"] += 1
+            self.mapa[chave] = auto
+            texto = re.sub(re.escape(auto), chave, texto, flags=re.IGNORECASE)
+
+        # Substituir CPF
         def substituir_cpf(m):
             valor = m.group()
             token = self.gerar_token("CPF")
             self.mapa[token] = valor
             return token
-
         cpf_pattern = r'\b\d{3}\.?\d{3}\.?\d{3}-\d{2}\b'
         texto = re.sub(cpf_pattern, substituir_cpf, texto)
 
+        # Substituir CNPJ
         def substituir_cnpj(m):
             valor = m.group()
             token = self.gerar_token("CNPJ")
             self.mapa[token] = valor
             return token
-
         cnpj_pattern = r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b'
         texto = re.sub(cnpj_pattern, substituir_cnpj, texto)
 
+        # Substituir telefones, ignorando autos
         def substituir_telefone(m):
             valor = m.group()
+            # Se valor está dentro de algum token AUTO, não substituir
+            if any(valor in self.mapa[a] for a in self.mapa if a.startswith("AUTO_")):
+                return valor
             token = self.gerar_token("TELEFONE")
             self.mapa[token] = valor
             return token
-
         telefone_pattern = r'\(?\d{2}\)?\s*\d{4,5}-?\d{4}'
         texto = re.sub(telefone_pattern, substituir_telefone, texto)
 
+        # spaCy para nomes, endereços, locais e organizações
         doc = self.nlp(texto)
-        nomes_encontrados = [(ent.start_char, ent.end_char, ent.text) for ent in doc.ents if ent.label_ == "PER"]
-        nomes_encontrados = sorted(nomes_encontrados, key=lambda x: x[0], reverse=True)
+        entidades = [(ent.start_char, ent.end_char, ent.text, ent.label_) for ent in doc.ents]
+        entidades = sorted(entidades, key=lambda x: x[0], reverse=True)
 
-        for start, end, nome in nomes_encontrados:
+        for start, end, texto_ent, label in entidades:
+            if label in ("PER", "LOC", "GPE", "ORG"):
+                if label == "PER":
+                    tipo_token = "NOME"
+                elif label == "ORG":
+                    tipo_token = "APELIDO"
+                else:
+                    tipo_token = "ENDERECO"
+                token = self.gerar_token(tipo_token)
+                self.mapa[token] = texto_ent
+                texto = texto[:start] + token + texto[end:]
+
+        # Regex extra para nomes após "RESPONSÁVEL:"
+        def anonimizar_responsavel(match):
+            prefixo = match.group(1)
+            nome = match.group(2)
             token = self.gerar_token("NOME")
             self.mapa[token] = nome
-            texto = texto[:start] + token + texto[end:]
+            return f"{prefixo}{token}"
+        texto = re.sub(
+            r'(RESPONS[ÁA]VEL:\s*)([A-Z][A-Za-zÀ-ÿ]+(?:\s[A-Z][A-Za-zÀ-ÿ]+)+)',
+            anonimizar_responsavel,
+            texto
+        )
+
+        # Regex para nomes fantasia / apelidos comerciais (palavras + termo comercial)
+        termos_empresas = r'\b(\w+\s+(Transportes|Transportadora|Logística|Logistica|LTDA|ME|EIRELI|Comércio|Comercial))\b'
+        def substituir_apelido(m):
+            valor = m.group(1)
+            token = self.gerar_token("APELIDO")
+            self.mapa[token] = valor
+            return token
+        texto = re.sub(termos_empresas, substituir_apelido, texto, flags=re.IGNORECASE)
+
+        # Regex para palavras isoladas em maiúsculas (>=3 letras) exceto siglas whitelist
+        def substituir_maiusculas(match):
+            palavra = match.group()
+            if palavra in self.siglas_whitelist:
+                return palavra
+            token = self.gerar_token("NOME")
+            self.mapa[token] = palavra
+            return token
+        texto = re.sub(r'\b[A-Z]{3,}\b', substituir_maiusculas, texto)
+
+        # Restaurar tokens AUTO para texto original
+        for chave, valor in self.mapa.items():
+            if chave.startswith("AUTO_"):
+                texto = texto.replace(chave, valor)
 
         return texto
 
