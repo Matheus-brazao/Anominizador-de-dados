@@ -7,11 +7,20 @@ import string
 import spacy
 import docx
 import pdfplumber
+from PIL import Image, ImageTk
+import sys, os
+import webbrowser
+
+if hasattr(sys, '_MEIPASS'):
+    base_dir = sys._MEIPASS
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+imagem = Image.open(os.path.join(base_dir, "sifama.png"))
 
 class AnonimizadorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Anonimizador Completo com Tokens Aleatórios")
+        self.root.title("Anonimizador E-Anônimo: Criptografia de dados")
         self.mapa = {}
         self.contadores = {
             "CPF":0, "CNPJ":0, "NOME":0, "TELEFONE":0, "ENDERECO":0, "APELIDO":0, "AUTO":0
@@ -23,14 +32,51 @@ class AnonimizadorApp:
         self.nlp = spacy.load("pt_core_news_sm")
 
         self.notebook = tk.ttk.Notebook(root)
+        self.frame_inicio = tk.Frame(self.notebook)
         self.frame_anonimizar = tk.Frame(self.notebook)
         self.frame_revelar = tk.Frame(self.notebook)
+        self.frame_sobre = tk.Frame(self.notebook)
+
+        self.notebook.add(self.frame_inicio, text="Início")
         self.notebook.add(self.frame_anonimizar, text="Anonimizar")
         self.notebook.add(self.frame_revelar, text="Revelar")
+        self.notebook.add(self.frame_sobre, text="Sobre")
         self.notebook.pack(expand=True, fill=tk.BOTH)
 
+        self.setup_inicio()
         self.setup_anonimizar()
         self.setup_revelar()
+        self.setup_sobre()
+
+    def setup_inicio(self):
+        # Carregar a imagem
+        try:
+            imagem = Image.open(os.path.join(base_dir, "sifama.png"))
+            imagem = imagem.resize((120, 120))  # Ajuste o tamanho se quiser
+            self.img_logo = ImageTk.PhotoImage(imagem)
+            tk.Label(self.frame_inicio, image=self.img_logo).pack(pady=(30,10))
+        except Exception as e:
+            print("Erro ao carregar imagem:", e)
+
+
+
+        tk.Label(self.frame_inicio, text="Bem-vindo ao Anonimizador de Dados", font=("Arial", 16)).pack(pady=40)
+        btn_iniciar = tk.Button(self.frame_inicio, text="Iniciar", font=("Arial", 14), width=20,
+                                command=lambda: self.notebook.select(self.frame_anonimizar))
+        btn_iniciar.pack(pady=20)
+
+        disclaimer = (
+            "Isenção de responsabilidade: As ferramentas deste site são fornecidas “no estado em que se encontram” e sem garantias de qualquer tipo. "
+            "O uso destas ferramentas é de responsabilidade exclusiva do usuário.\n"
+            "\n"
+            "Política de uso: É proibido o uso indevido das ferramentas para fins ilícitos ou sem a devida autorização. "
+            "Ao utilizar o site, você concorda com os termos e condições estabelecidos.\n"
+            "\n"
+            "Contato:\n"
+            "Matheus Brazão SUDEG - GEAUT, Email: matheus.paixao@antt.gov.br\n"
+            "Pedro Cavalcante SUDEG - GEAUT, Email: pedro.cavalcante@antt.gov.br"           
+        )
+        tk.Label(self.frame_inicio, text=disclaimer, font=("Arial", 9), wraplength=800, justify="left", fg="black", bg="white").pack(side=tk.BOTTOM, pady=20)    
 
     def gerar_id_aleatorio(self, length=8):
         return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
@@ -207,7 +253,7 @@ class AnonimizadorApp:
             self.txt_entrada_anonim.insert(tk.END, conteudo)
 
     def extrair_texto_pdf(self, caminho_pdf):
-        import pdfplumber
+
         texto = ""
         with pdfplumber.open(caminho_pdf) as pdf:
             for pagina in pdf.pages:
@@ -215,7 +261,6 @@ class AnonimizadorApp:
         return texto
 
     def extrair_texto_docx(self, caminho_docx):
-        import docx
         doc = docx.Document(caminho_docx)
         texto = "\n".join([p.text for p in doc.paragraphs])
         return texto
@@ -283,6 +328,76 @@ class AnonimizadorApp:
             with open(caminho, 'w', encoding='utf-8') as f:
                 f.write(texto)
             messagebox.showinfo("Sucesso", f"Texto restaurado salvo em:\n{caminho}")
+
+    def setup_sobre(self):
+        manual = (
+            "Manual de Uso:\n"
+            "1. Na aba 'Início', clique em 'Iniciar' para acessar as funcionalidades.\n"
+            "2. Na aba 'Anonimizar', carregue um arquivo de texto, PDF ou Word, ou cole o texto desejado.\n"
+            "   - Clique em 'Anonimizar Texto' para substituir dados sensíveis por criptografia.\n"
+            "   - Salve o texto anonimizado e o mapa JSON para futura revelação.\n"
+            "3. Na aba 'Revelar', carregue o texto anonimizado e o arquivo de mapa JSON correspondente.\n"
+            "   - Clique em 'Revelar Texto Original' para restaurar os dados originais.\n"
+            "   - Salve o texto restaurado, se desejar.\n"
+            "\n"
+            "Observações:\n"
+            "- Para otimizar o processo de anonimização, faça o uso do: "
+        )
+        # O link será um Label separado
+        manual2 = (
+            "- No prompt enviado ao NotebookLM, apresentar a contextualização padrão e anexar os arquivos já criptografados (Defesa e Auto de Infração).\n"
+            "- Utilize apenas arquivos compatíveis (.txt, .pdf, .docx).\n"
+            "- O mapa JSON é necessário para reverter a anonimização.\n"
+        )
+        info = (
+            "Anonimizador de Dados - ANTT/GEAUT/COAUT\n"
+            "Desenvolvido por Matheus Brazão e Pedro Cavalcante\n"
+            "Versão 2.0.2 - Jul/2025"
+        )
+
+        self.frame_sobre.configure(bg="#f0f0f0")
+        # Manual antes do link
+        tk.Label(
+            self.frame_sobre,
+            text=manual,
+            font=("Arial", 10),
+            justify="left",
+            fg="#222222",
+            bg="#f0f0f0"
+        ).pack(anchor="nw", padx=20, pady=(20, 0))
+
+        # Label simulando link
+        lbl_link = tk.Label(
+            self.frame_sobre,
+            text="-"" NotebookLM",
+            font=("Arial", 10, "underline"),
+            fg="blue",
+            bg="#f0f0f0",
+            cursor="hand2"
+        )
+        lbl_link.pack(anchor="nw", padx=20, pady=0)
+        lbl_link.bind("<Button-1>", lambda e: webbrowser.open_new("https://notebooklm.google.com/"))
+
+        # Manual depois do link
+        tk.Label(
+            self.frame_sobre,
+            text=manual2,
+            font=("Arial", 10),
+            justify="left",
+            fg="#222222",
+            bg="#f0f0f0"
+        ).pack(anchor="nw", padx=20, pady=(0, 5))
+
+        # Info no rodapé
+        tk.Label(
+            self.frame_sobre,
+            text=info,
+            font=("Arial", 8, "bold"),
+            justify="left",
+            fg="#295683",
+            bg="#f0f0f0",
+            pady=40
+        ).pack(side=tk.BOTTOM, anchor="sw", padx=20, pady=10)       
 
 if __name__ == "__main__":
     import tkinter.ttk as ttk
