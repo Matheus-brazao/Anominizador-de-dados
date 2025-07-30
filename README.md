@@ -39,7 +39,7 @@ Autores
 
 Versão
 ------
-2.0.2 - Jul/2025
+2.1.2 - Jul/2025
 
 Licença
 -------
