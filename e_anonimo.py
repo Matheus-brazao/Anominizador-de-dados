@@ -1,3 +1,25 @@
+"""""
+Anonimizador de Dados - ANTT/GEAUT/COAUT
+Desenvolvido por Matheus Brazão e Pedro Cavalcante
+Versão 2.0.2 - Jul/2025
+
+Automação para anonimização, criptografia e revelação de documentos sensíveis, em conformidade com LGPD.,
+
+TERMOS DE RESPONSABILIDADE E EXCLUSÃO DE RESPONSABILIDADE
+
+Este software foi desenvolvido como uma ferramenta auxiliar para anonimização de documentos com dados sensíveis.
+
+A Agência Nacional de Transportes Terrestres (ANTT) e os desenvolvedores deste programa
+não se responsabilizam por decisões tomadas exclusivamente com base nos resultados gerados pela ferramenta.
+
+Recomenda-se que toda análise e decisão final sejam realizadas por profissionais capacitados,
+com revisão criteriosa dos dados originais.
+
+O uso deste software implica aceitação destes termos.
+
+© 2025 ANTT - Todos os direitos reservados.
+
+"""
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import re
@@ -15,7 +37,7 @@ if hasattr(sys, '_MEIPASS'):
     base_dir = sys._MEIPASS
 else:
     base_dir = os.path.dirname(os.path.abspath(__file__))
-imagem = Image.open(os.path.join(base_dir, "sifama.png"))
+imagem = Image.open(os.path.join(base_dir, "antt_logo.png"))
 
 class AnonimizadorApp:
     def __init__(self, root):
@@ -51,7 +73,7 @@ class AnonimizadorApp:
     def setup_inicio(self):
         # Carregar a imagem
         try:
-            imagem = Image.open(os.path.join(base_dir, "sifama.png"))
+            imagem = Image.open(os.path.join(base_dir, "antt_logo.png"))
             imagem = imagem.resize((120, 120))  # Ajuste o tamanho se quiser
             self.img_logo = ImageTk.PhotoImage(imagem)
             tk.Label(self.frame_inicio, image=self.img_logo).pack(pady=(30,10))
@@ -333,26 +355,34 @@ class AnonimizadorApp:
         manual = (
             "Manual de Uso:\n"
             "1. Na aba 'Início', clique em 'Iniciar' para acessar as funcionalidades.\n"
-            "2. Na aba 'Anonimizar', carregue um arquivo de texto, PDF ou Word, ou cole o texto desejado.\n"
-            "   - Clique em 'Anonimizar Texto' para substituir dados sensíveis por criptografia.\n"
-            "   - Salve o texto anonimizado e o mapa JSON para futura revelação.\n"
-            "3. Na aba 'Revelar', carregue o texto anonimizado e o arquivo de mapa JSON correspondente.\n"
-            "   - Clique em 'Revelar Texto Original' para restaurar os dados originais.\n"
-            "   - Salve o texto restaurado, se desejar.\n"
+            "2. Na aba 'Anonimizar', carregue um arquivo em formato TXT, PDF, DOCX ou copie e cole o texto desejado.\n"
+            "   - Clique em 'Anonimizar Texto' para criptografar os dados sensíveis.\n"
+            "   - Salve o texto anonimizado e o mapa JSON.\n"
+            "3. Faça a consulta ao NotebookLM com o texto anonimizado seguindo as observações\n"
+            "3. Na aba 'Revelar', cole ou anexe o texto anonimizado de resposta do Notebook LM e o arquivo de mapa JSON correspondente.\n"
+            "   - Clique em 'Revelar Texto Original' para revelar os dados criptografados.\n"
+            "   - Salve o texto revelado e finalize o documento.\n"
             "\n"
             "Observações:\n"
-            "- Para otimizar o processo de anonimização, faça o uso do: "
+            "- Para melhorar o processo de elaboração da análise pela a IA: "
         )
         # O link será um Label separado
         manual2 = (
-            "- No prompt enviado ao NotebookLM, apresentar a contextualização padrão e anexar os arquivos já criptografados (Defesa e Auto de Infração).\n"
-            "- Utilize apenas arquivos compatíveis (.txt, .pdf, .docx).\n"
-            "- O mapa JSON é necessário para reverter a anonimização.\n"
+            "- No comando (prompt) enviado ao NotebookLM apresente breve contextualização do protocolo em análise.\n"
+            "- Anexe os documentos obrigatórios: Defesa (criptografa), Auto de Infração(criptografado) e as legislações pertinentes.\n"
+            "- A IA irá se basear exclusivamente nas fontes anexadas, sendo assim, garante que todos os documentos estão anexados.\n"
+            "- Exemplos de prompt:\n" 
+            "1. Elabore uma análise detalhada, indicando:\n"
+            "- Fundamentação jurídica\n"
+            "- Decisão final (manter ou cancelar o auto)\n"
+            "- Observações relevantes para o analista\n"
+            "2. Faça um resumo objetivo da situação, destacando os principais argumentos da defesa e a fundamentação legal para a decisão.\n"
+            "3. Leia os documentos e aponte os pontos críticos que devem ser observados pelo(a) analista, incluindo possíveis falhas de instrução, ausência de provas ou argumentos relevantes.\n"
         )
         info = (
             "Anonimizador de Dados - ANTT/GEAUT/COAUT\n"
-            "Desenvolvido por Matheus Brazão e Pedro Cavalcante\n"
-            "Versão 2.0.2 - Jul/2025"
+            "Desenvolvido por Matheus.Paixão@antt.gov.br e pedro.cavalcante@antt.gov.br\n"
+            "Versão 2.1.2 - Jul/2025"
         )
 
         self.frame_sobre.configure(bg="#f0f0f0")
