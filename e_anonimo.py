@@ -9,7 +9,7 @@ TERMOS DE RESPONSABILIDADE E EXCLUSÃO DE RESPONSABILIDADE
 
 Este software foi desenvolvido como uma ferramenta auxiliar para anonimização de documentos com dados sensíveis.
 
-A Agência Nacional de Transportes Terrestres (ANTT) e os desenvolvedores deste programa
+A Agência Nacional de Transportes Terrestres (ANTT) e os de senvolvedores deste programa
 não se responsabilizam por decisões tomadas exclusivamente com base nos resultados gerados pela ferramenta.
 
 Recomenda-se que toda análise e decisão final sejam realizadas por profissionais capacitados,
@@ -88,7 +88,7 @@ class AnonimizadorApp:
         btn_iniciar.pack(pady=20)
 
         disclaimer = (
-            "Isenção de responsabilidade: As ferramentas deste site são fornecidas “no estado em que se encontram” e sem garantias de qualquer tipo. "
+            "Isenção de responsabilidade: As ferramentas deste site são fornecidas no estado em que se encontram e sem garantias de qualquer tipo. "
             "O uso destas ferramentas é de responsabilidade exclusiva do usuário.\n"
             "\n"
             "Política de uso: É proibido o uso indevido das ferramentas para fins ilícitos ou sem a devida autorização. "
@@ -371,12 +371,19 @@ class AnonimizadorApp:
             "- No comando (prompt) enviado ao NotebookLM apresente breve contextualização do protocolo em análise.\n"
             "- Anexe os documentos obrigatórios: Defesa (criptografa), Auto de Infração(criptografado) e as legislações pertinentes.\n"
             "- A IA irá se basear exclusivamente nas fontes anexadas, sendo assim, garante que todos os documentos estão anexados.\n"
+            "--------------------//----------------------------------"
             "- Exemplos de prompt:\n" 
-            "1. Elabore uma análise detalhada, indicando:\n"
-            "- Fundamentação jurídica\n"
-            "- Decisão final (manter ou cancelar o auto)\n"
-            "- Observações relevantes para o analista\n"
+
+            "1. Crie um parecer técnico-jurídico para análise de uma defesa administrativa apresentada por uma empresa de transporte autuada pela ANTT.\n"
+            "Dados do caso:\n"
+            "Infração: [DESCREVA A INFRAÇÃO conforme a legislação aplicável, como por exemplo: Não divulgar o número do SAC de forma clara e objetiva em todos os documentos e locais obrigatórios\n"
+            "Fundamento legal da autuação: [CITAR AS NORMAS APLICÁVEIS]\n"
+            "Alegações da empresa: [RESUMIR as alegações]\n"
+            "Solicitação: Redija a análise técnica da defesa, com linguagem formal, fundamentada nos princípios do processo administrativo (legalidade, motivação, ampla defesa, contraditório, razoabilidade, proporcionalidade, etc.), concluindo pela manutenção ou cancelamento da autuação.\n"
+            "Indique claramente se a defesa deve ser indeferida, e porquê.\n"
+
             "2. Faça um resumo objetivo da situação, destacando os principais argumentos da defesa e a fundamentação legal para a decisão.\n"
+
             "3. Leia os documentos e aponte os pontos críticos que devem ser observados pelo(a) analista, incluindo possíveis falhas de instrução, ausência de provas ou argumentos relevantes.\n"
         )
         info = (
