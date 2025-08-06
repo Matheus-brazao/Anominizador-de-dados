@@ -1,7 +1,7 @@
 """""
 Anonimizador de Dados - ANTT/GEAUT/COAUT
 Desenvolvido por Matheus Brazão e Pedro Cavalcante
-Versão 2.0.2 - Jul/2025
+Versão 2.0.3 - Ago/2025
 
 Automação para anonimização, criptografia e revelação de documentos sensíveis, em conformidade com LGPD.,
 
@@ -32,6 +32,7 @@ import pdfplumber
 from PIL import Image, ImageTk
 import sys, os
 import webbrowser
+import pathlib
 
 if hasattr(sys, '_MEIPASS'):
     base_dir = sys._MEIPASS
@@ -51,7 +52,12 @@ class AnonimizadorApp:
             "ANTT", "GEAUT", "SEI", "GDF", "BR", "CPF", "CNPJ", "ME", "LTDA", "EIRELI", "FELVP"
         }
 
-        self.nlp = spacy.load("pt_core_news_sm")
+        try:
+            self.nlp = spacy.load("pt_core_news_sm")
+        except OSError:
+            base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+            model_path = os.path.join(base_dir, "pt_core_news_sm")
+            self.nlp = spacy.load(model_path)
 
         self.notebook = tk.ttk.Notebook(root)
         self.frame_inicio = tk.Frame(self.notebook)
@@ -389,7 +395,7 @@ class AnonimizadorApp:
         info = (
             "Anonimizador de Dados - ANTT/GEAUT/COAUT\n"
             "Desenvolvido por Matheus.Paixão@antt.gov.br e pedro.cavalcante@antt.gov.br\n"
-            "Versão 2.1.2 - Jul/2025"
+            "Versão 2.1.3 - Ago/2025"
         )
 
         self.frame_sobre.configure(bg="#f0f0f0")
