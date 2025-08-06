@@ -39,7 +39,7 @@ Desenvolvido por:
 
 Versão
 ------
-2.1.3 - Ago/2025
+2.1.4 - Ago/2025
 
 Licença
 -------
