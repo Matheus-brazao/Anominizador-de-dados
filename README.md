@@ -32,14 +32,14 @@ Observações
 - O mapa JSON é indispensável para reverter a anonimização.
 - Não utilize para fins ilícitos ou sem autorização.
 
-Autores
+Desenvolvido por:
 -------
 - Matheus Brazão (matheus.paixao@antt.gov.br)
 - Pedro Cavalcante (pedro.cavalcante@antt.gov.br)
 
 Versão
 ------
-2.1.2 - Jul/2025
+2.1.3 - Ago/2025
 
 Licença
 -------
