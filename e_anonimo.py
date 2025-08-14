@@ -377,16 +377,17 @@ class AnonimizadorApp:
             "- No comando (prompt) enviado ao NotebookLM apresente breve contextualização do protocolo em análise.\n"
             "- Anexe os documentos obrigatórios: Defesa (criptografa), Auto de Infração(criptografado) e as legislações pertinentes.\n"
             "- A IA irá se basear exclusivamente nas fontes anexadas, sendo assim, garante que todos os documentos estão anexados.\n"
-            "--------------------//----------------------------------"
+            "--------------------//----------------------------------\n"
             "- Exemplos de prompt:\n" 
 
-            "1. Crie um parecer técnico-jurídico para análise de uma defesa administrativa apresentada por uma empresa de transporte autuada pela ANTT.\n"
+            "'1. Crie um parecer técnico-jurídico para análise de uma defesa administrativa apresentada por uma empresa de transporte autuada pela ANTT.\n"
             "Dados do caso:\n"
             "Infração: [DESCREVA A INFRAÇÃO conforme a legislação aplicável, como por exemplo: Não divulgar o número do SAC de forma clara e objetiva em todos os documentos e locais obrigatórios\n"
             "Fundamento legal da autuação: [CITAR AS NORMAS APLICÁVEIS]\n"
             "Alegações da empresa: [RESUMIR as alegações]\n"
-            "Solicitação: Redija a análise técnica da defesa, com linguagem formal, fundamentada nos princípios do processo administrativo (legalidade, motivação, ampla defesa, contraditório, razoabilidade, proporcionalidade, etc.), concluindo pela manutenção ou cancelamento da autuação.\n"
-            "Indique claramente se a defesa deve ser indeferida, e porquê.\n"
+            "Solicitação: Redija a análise técnica da defesa, com linguagem formal, fundamentada nos princípios do processo administrativo (legalidade, motivação, ampla defesa, contraditório,\n"
+            "razoabilidade, proporcionalidade, etc.), concluindo pela manutenção ou cancelamento da autuação.\n"
+            "Indique claramente se a defesa deve ser indeferida, e porquê.'\n"
 
             "2. Faça um resumo objetivo da situação, destacando os principais argumentos da defesa e a fundamentação legal para a decisão.\n"
 
